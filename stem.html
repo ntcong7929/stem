@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <title>Khám phá Đắk Nông</title>
+    <link href="https://fonts.googleapis.com/css2?family=Lobster&family=Quicksand:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Quicksand', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+        #slideshow {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            z-index: -1;
+        }
+        .slide {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            opacity: 0;
+            transform: scale(1.05);
+            transition: all 1.5s ease;
+        }
+        .slide.active {
+            opacity: 1;
+            transform: scale(1);
+        }
+        .overlay {
+            position: fixed;
+            width: 100%;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.3);
+            z-index: 0;
+        }
+        #logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            width: 150px;
+            transition: transform 0.3s ease;
+            z-index: 2;
+        }
+        #logo:hover {
+            transform: scale(1.05);
+        }
+        #logo img {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.8);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        #chat-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80vh;
+            background: linear-gradient(135deg, #FFFFFF, #E6F3FA);
+            padding: 40px;
+            border-radius: 20px;
+            border: 1px solid #4A90E2;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.2);
+            animation: fadeIn 1s ease;
+            z-index: 1;
+            overflow-y: auto;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translate(-50%, -45%); }
+            to { opacity: 1; transform: translate(-50%, -50%); }
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-family: 'Lobster', cursive;
+            font-size: 48px;
+            color: #fff;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        .header p {
+            font-family: 'Quicksand', sans-serif;
+            font-size: 20px;
+            font-style: italic;
+            color: rgba(255, 255, 255, 0.9);
+        }
+        .suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+        }
+        .suggestion-btn {
+            padding: 10px 20px;
+            background: linear-gradient(45deg, #FF9999, #FF6666);
+            color: #FFF;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: transform 0.3s, background 0.3s;
+        }
+        .suggestion-btn:nth-child(odd) {
+            background: linear-gradient(45deg, #99CC99, #66B266);
+        }
+        .suggestion-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(45deg, #FF6666, #FF3333);
+        }
+        .suggestion-btn:nth-child(odd):hover {
+            background: linear-gradient(45deg, #66B266, #339933);
+        }
+        .chat-input-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-top: 30px;
+            justify-content: center;
+        }
+        #chat-input {
+            width: 60%;
+            padding: 12px 12px 12px 45px;
+            border: 2px solid #4A90E2;
+            border-radius: 25px;
+            font-family: 'Quicksand', sans-serif;
+            font-size: 18px;
+            transition: box-shadow 0.3s;
+        }
+        #chat-input:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(74, 144, 226, 0.5);
+        }
+        .chat-input-icon {
+            position: absolute;
+            left: 15px;
+            color: #4A90E2;
+            font-size: 22px;
+        }
+        #send-btn {
+            width: 60px;
+            height: 60px;
+            margin-left: 15px;
+            background: linear-gradient(45deg, #4A90E2, #2A6DB0);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.3s, background 0.3s;
+        }
+        #send-btn:hover {
+            transform: scale(1.1);
+            background: linear-gradient(45deg, #2A6DB0, #1A4A80);
+        }
+        #send-btn::before {
+            content: '➤';
+            font-size: 24px;
+        }
+        #chat-output {
+            margin-top: 30px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 18px;
+            color: #333;
+        }
+        .chat-bubble {
+            padding: 12px;
+            margin: 8px 0;
+            border-radius: 15px;
+            color: #333;
+        }
+        .user { background: #66B2FF; }
+        .ai { background: #E6E6E6; }
+        #answer-modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 80%;
+            height: 80%;
+            background: linear-gradient(135deg, #FFFFFF, #E6F3FA);
+            border-radius: 20px;
+            border: 1px solid #4A90E2;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+            z-index: 3;
+        }
+        #answer-modal .answer-content {
+            font-size: 20px;
+            color: #333;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        #answer-modal .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 50px;
+            height: 50px;
+            background: #FF6666;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 24px;
+            transition: background 0.3s;
+        }
+        #answer-modal .close-btn:hover {
+            background: #FF3333;
+        }
+        #answer-modal .ask-again-btn {
+            padding: 15px 60px;
+            background: linear-gradient(45deg, #4A90E2, #2A6DB0);
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 20px;
+            transition: transform 0.3s, background 0.3s;
+        }
+        #answer-modal .ask-again-btn:hover {
+            transform: scale(1.05);
+            background: linear-gradient(45deg, #2A6DB0, #1A4A80);
+        }
+    </style>
+</head>
+<body>
+    <div id="slideshow">
+        <img src="file:///D:/stem/b1.jfif" class="slide active" alt="Hồ Tà Đùng">
+        <img src="file:///D:/stem/b2.jpg" class="slide" alt="Thác Dray Nur">
+        <img src="file:///D:/stem/b3.webp" class="slide" alt="Vườn quốc gia Yok Đôn">
+        <img src="file:///D:/stem/b4.jpg" class="slide" alt="Bản đồ Đắk Nông">
+    </div>
+    <div class="overlay"></div>
+    <div id="logo">
+        <img src="file:///D:/stem/logo.jfif" alt="Virtual Daknong Guide Logo">
+    </div>
+    <div id="chat-container">
+        <div class="header">
+            <h1>Khám Phá Đắk Nông</h1>
+            <p>Hỏi AI, khám phá thiên nhiên và văn hóa Tây Nguyên</p>
+        </div>
+        <div class="suggestions">
+            <button class="suggestion-btn" onclick="ask('Hồ Tà Đùng có gì đặc biệt?')">Hồ Tà Đùng có gì đặc biệt?</button>
+            <button class="suggestion-btn" onclick="ask('Thác Dray Nur ở đâu?')">Thác Dray Nur ở đâu?</button>
+            <button class="suggestion-btn" onclick="ask('Đặc sản Đắk Nông là gì?')">Đặc sản Đắk Nông là gì?</button>
+            <button class="suggestion-btn" onclick="ask('Đi Đắk Nông mùa nào đẹp?')">Đi Đắk Nông mùa nào đẹp?</button>
+            <button class="suggestion-btn" onclick="ask('Có homestay gần hồ Tà Đùng không?')">Có homestay gần hồ Tà Đùng không?</button>
+            <button class="suggestion-btn" onclick="ask('Vườn quốc gia Yok Đôn có gì?')">Vườn quốc gia Yok Đôn có gì?</button>
+            <button class="suggestion-btn" onclick="ask('Lễ hội nào nổi tiếng ở Đắk Nông?')">Lễ hội nào nổi tiếng ở Đắk Nông?</button>
+            <button class="suggestion-btn" onclick="ask('Đường đến thác Liêng Nung thế nào?')">Đường đến thác Liêng Nung thế nào?</button>
+        </div>
+        <div class="chat-input-container">
+            <span class="chat-input-icon">💬</span>
+            <input type="text" id="chat-input" placeholder="Nhập câu hỏi của bạn...">
+            <button id="send-btn" onclick="sendQuestion()"></button>
+        </div>
+        <div id="chat-output"></div>
+    </div>
+    <div id="answer-modal">
+        <button class="close-btn" onclick="closeModal()">X</button>
+        <div class="answer-content" id="answer-content"></div>
+        <button class="ask-again-btn" onclick="closeModal()">Hỏi tiếp</button>
+    </div>
+
+    <script>
+        const slides = document.querySelectorAll('.slide');
+        let currentSlide = 0;
+
+        // Slideshow với hiệu ứng fade and zoom
+        function showNextSlide() {
+            slides[currentSlide].classList.remove('active');
+            currentSlide = (currentSlide + 1) % slides.length;
+            slides[currentSlide].classList.add('active');
+        }
+
+        // Chạy slideshow mỗi 10 giây
+        setInterval(showNextSlide, 10000);
+
+        // Gửi câu hỏi
+        function ask(question) {
+            document.getElementById('chat-input').value = question;
+            sendQuestion();
+        }
+
+        function sendQuestion() {
+            const input = document.getElementById('chat-input').value;
+            const output = document.getElementById('chat-output');
+            output.innerHTML += `<div class="chat-bubble user"><strong>Bạn:</strong> ${input}</div>`;
+
+            // Giả lập phản hồi AI
+            let response = "Đây là câu trả lời mẫu từ AI.";
+            if (input.includes("Hồ Tà Đùng")) {
+                response = "Hồ Tà Đùng là 'Vịnh Hạ Long của Tây Nguyên' với cảnh đẹp tuyệt vời.";
+                slides[currentSlide].classList.remove('active');
+                currentSlide = 0; // Hồ Tà Đùng (b1.jfif)
+                slides[currentSlide].classList.add('active');
+            } else if (input.includes("Thác Dray Nur")) {
+                response = "Thác Dray Nur nằm ở huyện Krông Nô, cách Gia Nghĩa khoảng 25km.";
+                slides[currentSlide].classList.remove('active');
+                currentSlide = 1; // Thác Dray Nur (b2.jpg)
+                slides[currentSlide].classList.add('active');
+            } else {
+                slides[currentSlide].classList.remove('active');
+                currentSlide = 3; // Bản đồ Đắk Nông (b4.jpg)
+                slides[currentSlide].classList.add('active');
+            }
+
+            // Hiển thị câu trả lời trong bảng
+            const answerModal = document.getElementById('answer-modal');
+            const answerContent = document.getElementById('answer-content');
+            answerContent.innerHTML = `<strong>AI:</strong> ${response}`;
+            answerModal.style.display = 'flex';
+
+            output.scrollTop = output.scrollHeight;
+            document.getElementById('chat-input').value = '';
+        }
+
+        // Đóng bảng trả lời
+        function closeModal() {
+            const answerModal = document.getElementById('answer-modal');
+            answerModal.style.display = 'none';
+        }
+    </script>
+</body>
+</html>
